@@ -9,8 +9,25 @@
 <link rel="manifest" href="manifest.json">
 <link rel="icon" href="icon.svg">
 <link rel="apple-touch-icon" href="icon-192.png">
+<script>try{const t=localStorage.getItem("smarthome-theme")||"auto";document.documentElement.dataset.theme=t==="auto"?(matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light"):t}catch(e){}</script>
 <style>
 :root{--bg:#f3f5f7;--card:#fff;--ink:#1c2530;--mute:#6b7785;--line:#dde3e9;--acc:#0f766e;--acc2:#e6f4f2;--warn:#b45309;--red:#b91c1c}
+
+:root{color-scheme:light}
+html[data-theme=dark]{color-scheme:dark;--bg:#0f1418;--card:#1a2228;--ink:#e6ebef;--mute:#93a1ad;--line:#2c3740;--acc:#14b8a6;--acc2:#123a36;--chip:#25303a;--field:#121a1f;--red:#f87171}
+html[data-theme=dark] header{background:#0d4f49}
+html[data-theme=dark] .btn{color:#06201d}
+html[data-theme=dark] .btn.sec{background:var(--chip);color:var(--ink)}
+html[data-theme=dark] .btn.del{background:#3b1d1d;color:var(--red)}
+html[data-theme=dark] .tag.s-geplant{background:#3a2a0b;color:#fbbf24}
+html[data-theme=dark] .tag.s-bestellt{background:#23264d;color:#a5b4fc}
+html[data-theme=dark] .tag.s-installiert{background:#132a4a;color:#93c5fd}
+html[data-theme=dark] .tag.s-fertig{background:#123222;color:#86efac}
+html[data-theme=dark] .item[style*="#334155"]{border-left-color:#64748b!important}
+html[data-theme=dark] #toast{background:#e6ebef;color:#0f1418}
+.prow select{background:#fff;color:#1c2530}
+.seg{display:flex;gap:6px;margin-top:8px}.seg .btn{flex:1;text-align:center;margin:0}
+.seg .btn.on{outline:2px solid var(--acc)}
 *{box-sizing:border-box}
 body{margin:0;font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;background:var(--bg);color:var(--ink);font-size:16px;padding-bottom:90px}
 header{position:sticky;top:0;z-index:5;background:var(--acc);color:#fff;padding:12px 14px calc(10px) ;padding-top:calc(12px + env(safe-area-inset-top))}
@@ -23,28 +40,28 @@ main{padding:12px;max-width:900px;margin:0 auto}
 h2{font-size:15px;text-transform:uppercase;letter-spacing:.05em;color:var(--mute);margin:18px 4px 8px;display:flex;justify-content:space-between;align-items:center}
 h2 span.count{background:var(--acc2);color:var(--acc);border-radius:20px;padding:2px 9px;font-size:13px}
 label{display:block;font-size:13px;color:var(--mute);margin:10px 0 4px}
-input,select,textarea{width:100%;padding:10px;border:1px solid var(--line);border-radius:8px;font-size:16px;background:#fff;color:var(--ink);font-family:inherit}
+input,select,textarea{width:100%;padding:10px;border:1px solid var(--line);border-radius:8px;font-size:16px;background:var(--field,#fff);color:var(--ink);font-family:inherit}
 textarea{min-height:60px;resize:vertical}
 .grid2{display:grid;grid-template-columns:1fr 1fr;gap:0 10px}
 .item{border-left:4px solid var(--acc)}
 .item .top{display:flex;justify-content:space-between;gap:8px;align-items:flex-start}
 .item .title{font-weight:600;font-size:16px}
 .item .sub{color:var(--mute);font-size:14px;margin-top:2px}
-.tag{display:inline-block;font-size:12px;padding:2px 8px;border-radius:20px;background:#eef1f4;margin:6px 4px 0 0}
+.tag{display:inline-block;font-size:12px;padding:2px 8px;border-radius:20px;background:var(--chip,#eef1f4);margin:6px 4px 0 0}
 .tag.ip{background:var(--acc2);color:var(--acc);font-family:ui-monospace,monospace}
 .tag.s-geplant{background:#fef3c7;color:var(--warn)}
 .tag.s-bestellt{background:#e0e7ff;color:#3730a3}
 .tag.s-installiert{background:#dbeafe;color:#1d4ed8}
 .tag.s-fertig{background:#dcfce7;color:#15803d}
-.iconbtn{border:0;background:#eef1f4;border-radius:8px;padding:6px 10px;font-size:15px}
+.iconbtn{border:0;background:var(--chip,#eef1f4);color:var(--ink);border-radius:8px;padding:6px 10px;font-size:15px}
 .btn{border:0;border-radius:10px;padding:12px 14px;font-size:15px;font-weight:600;background:var(--acc);color:#fff}
 .btn.sec{background:#e6ebef;color:var(--ink)}
 .btn.del{background:#fee2e2;color:var(--red)}
-.bar{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid var(--line);display:flex;gap:8px;padding:10px 12px calc(10px + env(safe-area-inset-bottom));z-index:6}
+.bar{position:fixed;bottom:0;left:0;right:0;background:var(--card);border-top:1px solid var(--line);display:flex;gap:8px;padding:10px 12px calc(10px + env(safe-area-inset-bottom));z-index:6}
 .bar .btn{flex:1}
 .empty{color:var(--mute);text-align:center;padding:14px;font-size:14px}
 .search{margin:4px 0 0}
-dialog{border:0;border-radius:14px;padding:0;width:min(560px,94vw);max-height:90vh}
+dialog{background:var(--card);color:var(--ink);border:0;border-radius:14px;padding:0;width:min(560px,94vw);max-height:90vh}
 dialog::backdrop{background:rgba(0,0,0,.4)}
 .dlg{padding:16px;overflow:auto;max-height:90vh}
 .dlg h3{margin:0 0 4px}
@@ -59,7 +76,7 @@ dialog::backdrop{background:rgba(0,0,0,.4)}
 #print{display:none}
 @media print{
   @page{size:A4;margin:14mm 12mm}
-  body{background:#fff;padding:0;font-size:10.5pt}
+  body{background:#fff!important;color:#000;padding:0;font-size:10.5pt}
   header,main,.bar,dialog,#toast{display:none!important}
   #print{display:block;color:#000}
   #print h1{font-size:18pt;margin:0 0 2pt}
@@ -159,7 +176,9 @@ dialog::backdrop{background:rgba(0,0,0,.4)}
 
 <!-- Projekt-Menü -->
 <dialog id="dMenu"><form method="dialog" class="dlg menu">
-  <h3>Projekt</h3>
+  <h3>Darstellung</h3>
+  <div class="seg" id="themeSeg"><button type="button" class="btn sec" data-t="auto">Auto</button><button type="button" class="btn sec" data-t="light">☀️ Hell</button><button type="button" class="btn sec" data-t="dark">🌙 Dunkel</button></div>
+  <h3 style="margin-top:16px">Projekt</h3>
   <button class="btn sec" value="new">➕ Neues Projekt</button>
   <button class="btn sec" value="rename">✏️ Umbenennen</button>
   <button class="btn sec" value="dup">📑 Duplizieren</button>
@@ -312,6 +331,15 @@ function buildPrint(){
 }
 $('#pdfBtn').onclick=()=>{buildPrint();const t=document.title;document.title=('SmartHome_'+P().name).replace(/[^\w\-äöüÄÖÜ]+/g,'_');setTimeout(()=>{window.print();document.title=t},50)};
 window.addEventListener('beforeprint',buildPrint);
+
+// Theme
+function getTheme(){try{return localStorage.getItem('smarthome-theme')||'auto'}catch(e){return 'auto'}}
+const mq=matchMedia('(prefers-color-scheme: dark)');
+function applyTheme(){const t=getTheme(),d=t==='auto'?(mq.matches?'dark':'light'):t;document.documentElement.dataset.theme=d;
+  document.querySelector('meta[name=theme-color]').content=d==='dark'?'#0d4f49':'#0f766e';
+  document.querySelectorAll('#themeSeg .btn').forEach(b=>b.classList.toggle('on',b.dataset.t===t))}
+$('#themeSeg').onclick=e=>{const b=e.target.closest('[data-t]');if(!b)return;try{localStorage.setItem('smarthome-theme',b.dataset.t)}catch(err){}applyTheme()};
+mq.addEventListener('change',applyTheme);applyTheme();
 
 render();
 if('serviceWorker' in navigator&&location.protocol.startsWith('http'))navigator.serviceWorker.register('sw.js').catch(()=>{});

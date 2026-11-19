@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0f766e">
+<meta name="mobile-web-app-capable" content="yes">
+<title>SmartHome Planer</title>
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icon.svg">
+<link rel="apple-touch-icon" href="icon-192.png">
+<style>
+:root{--bg:#f3f5f7;--card:#fff;--ink:#1c2530;--mute:#6b7785;--line:#dde3e9;--acc:#0f766e;--acc2:#e6f4f2;--warn:#b45309;--red:#b91c1c}
+*{box-sizing:border-box}
+body{margin:0;font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;background:var(--bg);color:var(--ink);font-size:16px;padding-bottom:90px}
+header{position:sticky;top:0;z-index:5;background:var(--acc);color:#fff;padding:12px 14px calc(10px) ;padding-top:calc(12px + env(safe-area-inset-top))}
+header h1{margin:0;font-size:18px;font-weight:650}
+.prow{display:flex;gap:8px;margin-top:8px}
+.prow select{flex:1;padding:8px;border-radius:8px;border:0;font-size:15px}
+.prow button{background:rgba(255,255,255,.18);color:#fff;border:0;border-radius:8px;padding:0 12px;font-size:20px}
+main{padding:12px;max-width:900px;margin:0 auto}
+.card{background:var(--card);border-radius:12px;padding:14px;margin-bottom:12px;box-shadow:0 1px 2px rgba(0,0,0,.05)}
+h2{font-size:15px;text-transform:uppercase;letter-spacing:.05em;color:var(--mute);margin:18px 4px 8px;display:flex;justify-content:space-between;align-items:center}
+h2 span.count{background:var(--acc2);color:var(--acc);border-radius:20px;padding:2px 9px;font-size:13px}
+label{display:block;font-size:13px;color:var(--mute);margin:10px 0 4px}
+input,select,textarea{width:100%;padding:10px;border:1px solid var(--line);border-radius:8px;font-size:16px;background:#fff;color:var(--ink);font-family:inherit}
+textarea{min-height:60px;resize:vertical}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:0 10px}
+.item{border-left:4px solid var(--acc)}
+.item .top{display:flex;justify-content:space-between;gap:8px;align-items:flex-start}
+.item .title{font-weight:600;font-size:16px}
+.item .sub{color:var(--mute);font-size:14px;margin-top:2px}
+.tag{display:inline-block;font-size:12px;padding:2px 8px;border-radius:20px;background:#eef1f4;margin:6px 4px 0 0}
+.tag.ip{background:var(--acc2);color:var(--acc);font-family:ui-monospace,monospace}
+.tag.s-geplant{background:#fef3c7;color:var(--warn)}
+.tag.s-bestellt{background:#e0e7ff;color:#3730a3}
+.tag.s-installiert{background:#dbeafe;color:#1d4ed8}
+.tag.s-fertig{background:#dcfce7;color:#15803d}
+.iconbtn{border:0;background:#eef1f4;border-radius:8px;padding:6px 10px;font-size:15px}
+.btn{border:0;border-radius:10px;padding:12px 14px;font-size:15px;font-weight:600;background:var(--acc);color:#fff}
+.btn.sec{background:#e6ebef;color:var(--ink)}
+.btn.del{background:#fee2e2;color:var(--red)}
+.bar{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid var(--line);display:flex;gap:8px;padding:10px 12px calc(10px + env(safe-area-inset-bottom));z-index:6}
+.bar .btn{flex:1}
+.empty{color:var(--mute);text-align:center;padding:14px;font-size:14px}
+.search{margin:4px 0 0}
+dialog{border:0;border-radius:14px;padding:0;width:min(560px,94vw);max-height:90vh}
+dialog::backdrop{background:rgba(0,0,0,.4)}
+.dlg{padding:16px;overflow:auto;max-height:90vh}
+.dlg h3{margin:0 0 4px}
+.dlgbtns{display:flex;gap:8px;margin-top:16px;flex-wrap:wrap}
+.dlgbtns .btn{flex:1}
+.hide{display:none!important}
+.menu .btn{width:100%;margin-top:8px;text-align:left}
+.hint{font-size:13px;color:var(--mute)}
+#toast{position:fixed;left:50%;bottom:90px;transform:translateX(-50%);background:#1c2530;color:#fff;padding:10px 16px;border-radius:10px;font-size:14px;opacity:0;transition:opacity .3s;pointer-events:none;z-index:20}
+#toast.on{opacity:1}
+/* Print / PDF */
+#print{display:none}
+@media print{
+  @page{size:A4;margin:14mm 12mm}
+  body{background:#fff;padding:0;font-size:10.5pt}
+  header,main,.bar,dialog,#toast{display:none!important}
+  #print{display:block;color:#000}
+  #print h1{font-size:18pt;margin:0 0 2pt}
+  #print .meta{font-size:10pt;color:#444;margin-bottom:10pt}
+  #print h2{font-size:12pt;color:#0f766e;text-transform:none;letter-spacing:0;margin:14pt 0 5pt;display:block;border-bottom:1.5pt solid #0f766e;padding-bottom:2pt}
+  #print table{width:100%;border-collapse:collapse;font-size:9.5pt}
+  #print th{background:#e6f4f2;text-align:left;padding:4pt 5pt;border:0.5pt solid #bbb}
+  #print td{padding:4pt 5pt;border:0.5pt solid #bbb;vertical-align:top}
+  #print tr{page-break-inside:avoid}
+  #print .mono{font-family:ui-monospace,monospace}
+  #print .room{background:#f3f5f7;font-weight:700}
+  #print .foot{margin-top:14pt;font-size:8.5pt;color:#666}
+}
+</style>
+</head>
+<body>
+<header>
+  <h1>🏠 SmartHome Planer</h1>
+  <div class="prow">
+    <select id="projSel" aria-label="Projekt"></select>
+    <button id="projMenuBtn" aria-label="Projekt-Menü">⋯</button>
+  </div>
+</header>
+
+<main>
+  <div class="card" id="projCard">
+    <div class="grid2">
+      <div><label>Kunde / Objekt</label><input id="pKunde"></div>
+      <div><label>Datum</label><input id="pDatum" type="date"></div>
+    </div>
+    <label>Adresse</label><input id="pAdresse">
+    <label>Notizen zum Projekt</label><textarea id="pNotiz"></textarea>
+  </div>
+
+  <h2>Server <span class="count" id="srvCount">0</span></h2>
+  <div id="srvList"></div>
+  <button class="btn sec" style="width:100%" id="addSrv">+ Server hinzufügen</button>
+
+  <h2>Komponenten <span class="count" id="cmpCount">0</span></h2>
+  <input class="search" id="search" placeholder="🔍 Suchen (Raum, Gerät, IP …)">
+  <div id="cmpList" style="margin-top:10px"></div>
+</main>
+
+<div class="bar">
+  <button class="btn" id="addCmp">+ Komponente</button>
+  <button class="btn sec" id="pdfBtn">📄 PDF</button>
+</div>
+
+<!-- Komponente -->
+<dialog id="dCmp"><form method="dialog" class="dlg" id="fCmp">
+  <h3 id="dCmpTitle">Komponente</h3>
+  <div class="grid2">
+    <div><label>Raum</label><input name="raum" list="raeume" required></div>
+    <div><label>Status</label><select name="status">
+      <option>geplant</option><option>bestellt</option><option>installiert</option><option>fertig</option></select></div>
+  </div>
+  <datalist id="raeume"></datalist>
+  <label>Was soll smart werden?</label><input name="was" placeholder="z. B. Deckenlicht Wohnzimmer" required>
+  <label>Komponente / Gerät</label><input name="geraet" placeholder="z. B. Shelly 1PM Mini Gen3">
+  <div class="grid2">
+    <div><label>Verbindung</label><select name="verbindung" id="verbSel">
+      <option>WLAN</option><option>LAN</option><option>Zigbee</option><option>Z-Wave</option><option>Thread / Matter</option><option>Bluetooth</option><option>KNX</option><option>Funk (433/868 MHz)</option><option>Andere</option></select></div>
+    <div id="ipWrap"><label>IP-Adresse</label><input name="ip" inputmode="decimal" placeholder="192.168.1.50"></div>
+  </div>
+  <div class="grid2" id="netWrap">
+    <div><label>MAC (optional)</label><input name="mac" placeholder="AA:BB:CC:…"></div>
+    <div><label>Hostname (optional)</label><input name="host"></div>
+  </div>
+  <label>Verbunden mit Server</label><select name="server" id="srvSel"></select>
+  <label>Notiz</label><textarea name="notiz"></textarea>
+  <div class="dlgbtns">
+    <button class="btn del hide" value="delete" id="cmpDel" formnovalidate>Löschen</button>
+    <button class="btn sec" value="cancel" formnovalidate>Abbrechen</button>
+    <button class="btn" value="save">Speichern</button>
+  </div>
+</form></dialog>
+
+<!-- Server -->
+<dialog id="dSrv"><form method="dialog" class="dlg" id="fSrv">
+  <h3>Server</h3>
+  <label>Name</label><input name="name" placeholder="z. B. Home Assistant" required>
+  <div class="grid2">
+    <div><label>Typ / Hardware</label><input name="typ" placeholder="z. B. Raspberry Pi 5, Proxmox-VM"></div>
+    <div><label>IP-Adresse</label><input name="ip" inputmode="decimal" placeholder="192.168.1.10"></div>
+  </div>
+  <div class="grid2">
+    <div><label>Verbindung</label><select name="verbindung"><option>LAN</option><option>WLAN</option><option>Andere</option></select></div>
+    <div><label>Port / URL (optional)</label><input name="url" placeholder=":8123"></div>
+  </div>
+  <label>Beschreibung</label><textarea name="beschreibung" placeholder="Wofür ist der Server zuständig?"></textarea>
+  <div class="dlgbtns">
+    <button class="btn del hide" value="delete" id="srvDel" formnovalidate>Löschen</button>
+    <button class="btn sec" value="cancel" formnovalidate>Abbrechen</button>
+    <button class="btn" value="save">Speichern</button>
+  </div>
+</form></dialog>
+
+<!-- Projekt-Menü -->
+<dialog id="dMenu"><form method="dialog" class="dlg menu">
+  <h3>Projekt</h3>
+  <button class="btn sec" value="new">➕ Neues Projekt</button>
+  <button class="btn sec" value="rename">✏️ Umbenennen</button>
+  <button class="btn sec" value="dup">📑 Duplizieren</button>
+  <button class="btn sec" value="export">💾 Backup speichern (JSON)</button>
+  <button class="btn sec" value="import">📂 Backup laden (JSON)</button>
+  <button class="btn del" value="delproj">🗑️ Projekt löschen</button>
+  <button class="btn" value="cancel" style="text-align:center">Schliessen</button>
+  <p class="hint">Die Daten liegen nur auf diesem Gerät im Browser. Mach ab und zu ein Backup.</p>
+</form></dialog>
+<input type="file" id="importFile" accept=".json,application/json" class="hide">
+
+<div id="print"></div>
+<div id="toast"></div>
+
+<script>
+const KEY='smarthome-planer-v1';
+const $=s=>document.querySelector(s);
+const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,6);
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const NET=['WLAN','LAN'];
+
+let mem=null;
+function load(){try{const d=JSON.parse(localStorage.getItem(KEY));if(d&&d.projects)return d}catch(e){}return null}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(db))}catch(e){toast('⚠️ Speichern fehlgeschlagen – bitte Backup machen')}}
+function newProject(name){return{id:uid(),name,kunde:'',adresse:'',datum:new Date().toISOString().slice(0,10),notiz:'',servers:[],items:[]}}
+let db=load()||{current:null,projects:[]};
+if(!db.projects.length){const p=newProject('Mein SmartHome');db.projects.push(p);db.current=p.id;save()}
+const P=()=>db.projects.find(p=>p.id===db.current)||db.projects[0];
+
+function toast(t){const e=$('#toast');e.textContent=t;e.classList.add('on');clearTimeout(e._t);e._t=setTimeout(()=>e.classList.remove('on'),2200)}
+
+function render(){
+  const p=P();db.current=p.id;
+  $('#projSel').innerHTML=db.projects.map(x=>`<option value="${x.id}"${x.id===p.id?' selected':''}>${esc(x.name)}</option>`).join('');
+  ['kunde','adresse','datum','notiz'].forEach(k=>{const el=$('#p'+k[0].toUpperCase()+k.slice(1));if(document.activeElement!==el)el.value=p[k]||''});
+  // Server
+  $('#srvCount').textContent=p.servers.length;
+  $('#srvList').innerHTML=p.servers.length?p.servers.map(s=>`
+    <div class="card item" style="border-left-color:#334155" data-srv="${s.id}">
+      <div class="top"><div><div class="title">🖥️ ${esc(s.name)}</div>
+      <div class="sub">${esc(s.typ)}</div></div><button class="iconbtn">✏️</button></div>
+      ${s.ip?`<span class="tag ip">${esc(s.ip)}${esc(s.url&&s.url.startsWith(':')?s.url:'')}</span>`:''}
+      <span class="tag">${esc(s.verbindung)}</span>
+      <span class="tag">${p.items.filter(i=>i.server===s.id).length} Geräte</span>
+      ${s.beschreibung?`<div class="sub" style="margin-top:8px;white-space:pre-wrap">${esc(s.beschreibung)}</div>`:''}
+    </div>`).join(''):'<div class="empty">Noch kein Server erfasst.</div>';
+  // Komponenten
+  const q=$('#search').value.trim().toLowerCase();
+  let items=p.items.slice().sort((a,b)=>(a.raum||'').localeCompare(b.raum||'','de')||(a.was||'').localeCompare(b.was||'','de'));
+  if(q)items=items.filter(i=>[i.raum,i.was,i.geraet,i.ip,i.verbindung,i.notiz,i.host,srvName(i.server)].join(' ').toLowerCase().includes(q));
+  $('#cmpCount').textContent=p.items.length;
+  let html='',room=null;
+  for(const i of items){
+    if(i.raum!==room){room=i.raum;html+=`<h2 style="margin-top:14px">${esc(room||'Ohne Raum')}</h2>`}
+    html+=`<div class="card item" data-cmp="${i.id}">
+      <div class="top"><div><div class="title">${esc(i.was)}</div><div class="sub">${esc(i.geraet)}</div></div><button class="iconbtn">✏️</button></div>
+      <span class="tag">${esc(i.verbindung)}</span>
+      ${NET.includes(i.verbindung)&&i.ip?`<span class="tag ip">${esc(i.ip)}</span>`:''}
+      ${i.server?`<span class="tag">🖥️ ${esc(srvName(i.server))}</span>`:''}
+      <span class="tag s-${esc(i.status)}">${esc(i.status)}</span>
+      ${i.notiz?`<div class="sub" style="margin-top:8px;white-space:pre-wrap">${esc(i.notiz)}</div>`:''}
+    </div>`;
+  }
+  $('#cmpList').innerHTML=html||`<div class="empty">${q?'Keine Treffer.':'Noch keine Komponenten. Tippe unten auf „+ Komponente“.'}</div>`;
+  $('#raeume').innerHTML=[...new Set(p.items.map(i=>i.raum).filter(Boolean))].map(r=>`<option value="${esc(r)}">`).join('');
+}
+function srvName(id){const s=P().servers.find(s=>s.id===id);return s?s.name:''}
+
+// Projektfelder
+['Kunde','Adresse','Datum','Notiz'].forEach(k=>$('#p'+k).addEventListener('input',e=>{P()[k.toLowerCase()]=e.target.value;save()}));
+$('#projSel').onchange=e=>{db.current=e.target.value;save();$('#search').value='';render()};
+$('#search').oninput=render;
+
+// Komponente-Dialog
+let editCmp=null;
+function toggleIp(){const n=NET.includes($('#verbSel').value);$('#ipWrap').classList.toggle('hide',!n);$('#netWrap').classList.toggle('hide',!n)}
+$('#verbSel').onchange=toggleIp;
+function openCmp(id){
+  const p=P();editCmp=id?p.items.find(i=>i.id===id):null;const f=$('#fCmp');f.reset();
+  $('#srvSel').innerHTML='<option value="">– keiner –</option>'+p.servers.map(s=>`<option value="${s.id}">${esc(s.name)}</option>`).join('');
+  if(editCmp){for(const k of ['raum','was','geraet','verbindung','ip','mac','host','server','status','notiz'])if(f[k])f[k].value=editCmp[k]||(k==='status'?'geplant':'')}
+  else{const last=p.items[p.items.length-1];if(last)f.raum.value=last.raum||'';if(p.servers.length===1)f.server.value=p.servers[0].id}
+  $('#dCmpTitle').textContent=editCmp?'Komponente bearbeiten':'Neue Komponente';
+  $('#cmpDel').classList.toggle('hide',!editCmp);toggleIp();$('#dCmp').showModal();
+}
+$('#addCmp').onclick=()=>openCmp();
+$('#cmpList').onclick=e=>{const c=e.target.closest('[data-cmp]');if(c)openCmp(c.dataset.cmp)};
+$('#dCmp').addEventListener('close',()=>{
+  const v=$('#dCmp').returnValue,p=P(),f=$('#fCmp');
+  if(v==='delete'&&editCmp){if(confirm(`„${editCmp.was}“ wirklich löschen?`)){p.items=p.items.filter(i=>i!==editCmp);toast('Gelöscht')}}
+  else if(v==='save'){
+    const d={};for(const k of ['raum','was','geraet','verbindung','ip','mac','host','server','status','notiz'])d[k]=f[k].value.trim();
+    if(!NET.includes(d.verbindung)){d.ip='';d.mac='';d.host=''}
+    if(d.ip){const dup=p.items.find(i=>i.ip===d.ip&&i!==editCmp)||p.servers.find(s=>s.ip===d.ip);if(dup)toast('⚠️ IP '+d.ip+' ist schon vergeben')}
+    if(editCmp)Object.assign(editCmp,d);else p.items.push({id:uid(),...d});
+  }
+  save();render();
+});
+
+// Server-Dialog
+let editSrv=null;
+function openSrv(id){const p=P();editSrv=id?p.servers.find(s=>s.id===id):null;const f=$('#fSrv');f.reset();
+  if(editSrv)for(const k of ['name','typ','ip','verbindung','url','beschreibung'])f[k].value=editSrv[k]||'';
+  $('#srvDel').classList.toggle('hide',!editSrv);$('#dSrv').showModal()}
+$('#addSrv').onclick=()=>openSrv();
+$('#srvList').onclick=e=>{const c=e.target.closest('[data-srv]');if(c)openSrv(c.dataset.srv)};
+$('#dSrv').addEventListener('close',()=>{
+  const v=$('#dSrv').returnValue,p=P(),f=$('#fSrv');
+  if(v==='delete'&&editSrv){if(confirm(`Server „${editSrv.name}“ wirklich löschen? Die Geräte bleiben erhalten.`)){p.items.forEach(i=>{if(i.server===editSrv.id)i.server=''});p.servers=p.servers.filter(s=>s!==editSrv);toast('Gelöscht')}}
+  else if(v==='save'){const d={};for(const k of ['name','typ','ip','verbindung','url','beschreibung'])d[k]=f[k].value.trim();
+    if(editSrv)Object.assign(editSrv,d);else p.servers.push({id:uid(),...d})}
+  save();render();
+});
+
+// Projekt-Menü
+$('#projMenuBtn').onclick=()=>$('#dMenu').showModal();
+$('#dMenu').addEventListener('close',()=>{
+  const v=$('#dMenu').returnValue,p=P();
+  if(v==='new'){const n=prompt('Name des neuen Projekts:','Projekt '+(db.projects.length+1));if(n){const np=newProject(n.trim());db.projects.push(np);db.current=np.id}}
+  if(v==='rename'){const n=prompt('Neuer Name:',p.name);if(n)p.name=n.trim()}
+  if(v==='dup'){const c=JSON.parse(JSON.stringify(p));c.id=uid();c.name=p.name+' (Kopie)';db.projects.push(c);db.current=c.id}
+  if(v==='delproj'){if(confirm(`Projekt „${p.name}“ mit allen Einträgen wirklich löschen?`)){db.projects=db.projects.filter(x=>x!==p);if(!db.projects.length)db.projects.push(newProject('Mein SmartHome'));db.current=db.projects[0].id;toast('Projekt gelöscht')}}
+  if(v==='export'){const b=new Blob([JSON.stringify(db,null,2)],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='smarthome-backup-'+new Date().toISOString().slice(0,10)+'.json';a.click();setTimeout(()=>URL.revokeObjectURL(a.href),2000)}
+  if(v==='import')$('#importFile').click();
+  save();render();
+});
+$('#importFile').onchange=async e=>{const file=e.target.files[0];if(!file)return;
+  try{const d=JSON.parse(await file.text());if(!d.projects)throw 0;
+    if(confirm(`Backup mit ${d.projects.length} Projekt(en) laden?\nOK = zu den bestehenden hinzufügen`)){
+      d.projects.forEach(x=>{if(db.projects.some(y=>y.id===x.id))x.id=uid();db.projects.push(x)});db.current=d.projects[0].id;save();render();toast('Backup geladen')}
+  }catch(err){alert('Die Datei ist kein gültiges Backup.')}e.target.value=''};
+
+// PDF
+function buildPrint(){
+  const p=P(),fmt=d=>d?new Date(d+'T00:00').toLocaleDateString('de-CH'):'';
+  const items=p.items.slice().sort((a,b)=>(a.raum||'').localeCompare(b.raum||'','de')||(a.was||'').localeCompare(b.was||'','de'));
+  let h=`<h1>SmartHome-Installation – ${esc(p.name)}</h1><div class="meta">`+
+    [p.kunde&&'Kunde: '+esc(p.kunde),p.adresse&&esc(p.adresse),p.datum&&'Datum: '+fmt(p.datum)].filter(Boolean).join(' &nbsp;·&nbsp; ')+`</div>`;
+  if(p.notiz)h+=`<div style="white-space:pre-wrap;margin-bottom:8pt">${esc(p.notiz)}</div>`;
+  if(p.servers.length){h+=`<h2>Server (${p.servers.length})</h2><table><tr><th>Name</th><th>Typ / Hardware</th><th>IP</th><th>Verb.</th><th>Beschreibung</th></tr>`+
+    p.servers.map(s=>`<tr><td><b>${esc(s.name)}</b></td><td>${esc(s.typ)}</td><td class="mono">${esc(s.ip)}${s.url?'<br>'+esc(s.url):''}</td><td>${esc(s.verbindung)}</td><td style="white-space:pre-wrap">${esc(s.beschreibung)}</td></tr>`).join('')+`</table>`}
+  h+=`<h2>Komponenten (${items.length})</h2><table><tr><th>Was wird smart</th><th>Komponente</th><th>Verbindung</th><th>IP-Adresse</th><th>Server</th><th>Status</th><th>Notiz</th></tr>`;
+  let room=null;
+  for(const i of items){if(i.raum!==room){room=i.raum;h+=`<tr><td colspan="7" class="room">${esc(room||'Ohne Raum')}</td></tr>`}
+    h+=`<tr><td>${esc(i.was)}</td><td>${esc(i.geraet)}</td><td>${esc(i.verbindung)}</td><td class="mono">${esc(i.ip)}${i.host?'<br>'+esc(i.host):''}</td><td>${esc(srvName(i.server))}</td><td>${esc(i.status)}</td><td style="white-space:pre-wrap">${esc(i.notiz)}</td></tr>`}
+  h+=`</table>`;
+  const byV={};items.forEach(i=>byV[i.verbindung]=(byV[i.verbindung]||0)+1);
+  h+=`<div class="foot">Übersicht: ${Object.entries(byV).map(([k,v])=>`${esc(k)}: ${v}`).join(' · ')||'–'} &nbsp;|&nbsp; Erstellt am ${new Date().toLocaleDateString('de-CH')}</div>`;
+  $('#print').innerHTML=h;
+}
+$('#pdfBtn').onclick=()=>{buildPrint();const t=document.title;document.title=('SmartHome_'+P().name).replace(/[^\w\-äöüÄÖÜ]+/g,'_');setTimeout(()=>{window.print();document.title=t},50)};
+window.addEventListener('beforeprint',buildPrint);
+
+render();
+if('serviceWorker' in navigator&&location.protocol.startsWith('http'))navigator.serviceWorker.register('sw.js').catch(()=>{});
+</script>
+</body>
+</html>
